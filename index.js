@@ -6,6 +6,7 @@ const fs = require('fs');
 const ExcelJS = require('exceljs');
 const moment = require('moment');
 const archiver = require('archiver');
+const { queryDatabase } = require('./database');
 
 const app = express();
 const upload = multer({ dest: 'uploads/' });
@@ -20,6 +21,10 @@ function createExcelFile(columns) {
     });
     return [workbook, worksheet];
 }
+
+app.get("/", (req, res, next) => {
+    return res.send("Hello World");
+})
 
 // Upload endpoint
 app.post('/upload', upload.single('file'), async (req, res) => {
@@ -256,19 +261,78 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         try {
             await fs.promises.rm(folderPath, { recursive: true, force: true });
             const uploadsDir = path.join(__dirname, 'uploads');
-            await fs.promises.rm(uploadsDir, { recursive: true, force: true });
+            // await fs.promises.rm(uploadsDir, { recursive: true, force: true });
+            fs.unlinkSync(file.path);
             console.log(`Folder ${folderPath} successfully deleted`);
             console.log(`Folder ${uploadsDir} successfully deleted`);
 
             //create again the folder
             // fs.mkdirSync(folderPath);
-            fs.mkdirSync(uploadsDir);
+            // fs.mkdirSync(uploadsDir);
         } catch (err) {
             console.error(`Error deleting folder ${folderPath}:`, err);
         }
     });
 
 });
+
+app.post('/upload-trx', upload.single('file'), async (req, res) => {
+    const file = req.file;
+    const workbook = XLSX.readFile(file.path);
+    const worksheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[worksheetName];
+    const datas = XLSX.utils.sheet_to_json(worksheet);
+    console.log("Processing");
+    try {
+        await queryDatabase('BEGIN');
+
+        for (const data of datas) {
+            if (!data['Reference ID']) {
+                await queryDatabase('ROLLBACK');
+                return res.json({
+                    message: 'Reference ID not found'
+                })
+            }
+            const findData = await queryDatabase('select * from ppob_transaction where reference_id = $1', [data['Reference ID']]);
+            if (findData.length === 0) {
+                await queryDatabase('ROLLBACK');
+                return res.json({
+                    message: `Trx Id ${data['Reference ID']} not found`
+                })
+            }
+
+            const updateQuery = 'update ppob_transaction set status = $1, response_data = $2, response_biller = $3 where reference_id = $4';
+            const status = data['Status'] === 'SUCCESS' ? 'SUCCESS' : 'FAILED';
+            const response_biller = status === 'SUCCESS' ? 'Approve' : findData[0].response_biller;
+            let response_data = findData[0].response_data ? JSON.parse(findData[0].response_data) : null;
+            if (status === 'SUCCESS') {
+                if (response_data) {
+                    response_data['serial_number'] = data['Serial Number'];
+                } else {
+                    response_data = {
+                        customer_number: '',
+                        customer_name: '',
+                        serial_number: data['Serial Number']
+                    }
+                }
+            }
+            const params = [status, response_data, response_biller, data['Reference ID']];
+            await queryDatabase(updateQuery, params);
+        }
+        await queryDatabase('COMMIT');
+        console.log("Deleting the file");
+        fs.unlinkSync(file.path);
+        return res.json({
+            message: 'Update trx successfully'
+        })
+    } catch (err) {
+        await queryDatabase('ROLLBACK');
+        console.log(err)
+        return res.json({
+            message: 'Internal server error'
+        })
+    }
+})
 
 
 app.listen(3000, () => {
