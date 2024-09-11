@@ -7,6 +7,7 @@ const ExcelJS = require('exceljs');
 const moment = require('moment');
 const archiver = require('archiver');
 const { queryDatabase } = require('./database');
+const createTemplate = require('./template-struk-listrik');
 
 const app = express();
 const upload = multer({ dest: 'uploads/' });
@@ -20,6 +21,27 @@ function createExcelFile(columns) {
         cell.font = { bold: true };
     });
     return [workbook, worksheet];
+}
+
+function excelDateToJsDate(serial) {
+    // Excel date serial number is the number of days since January 1, 1900
+    const excelEpoch = new Date(Date.UTC(1900, 0, 1));
+    // Adjust for Excel leap year bug
+    const excelDate = new Date(excelEpoch.getTime() + (serial - 1) * 24 * 60 * 60 * 1000);
+
+    // Extract fractional part to calculate time
+    const timePortion = serial % 1;
+    const hours = Math.floor(timePortion * 24);
+    const minutes = Math.floor((timePortion * 24 - hours) * 60);
+    const seconds = Math.floor(((timePortion * 24 - hours) * 60 - minutes) * 60);
+
+    // Add time to the date
+    excelDate.setUTCHours(hours, minutes, seconds);
+
+    const offset = 7 * 60;
+    excelDate.setUTCMinutes(excelDate.getUTCMinutes() + offset);
+
+    return excelDate;
 }
 
 app.get("/", (req, res, next) => {
@@ -333,6 +355,136 @@ app.post('/upload-trx', upload.single('file'), async (req, res) => {
         })
     }
 })
+
+app.post('/upload-struk-pln', upload.single('file'), async (req, res) => {
+    const file = req.file;
+    if (!file) {
+        return res.status(400).send('No file uploaded');
+    }
+    const workbook = new ExcelJS.Workbook();
+    const datas = XLSX.readFile(file.path);
+    const dataWorksheet = datas.SheetNames[0];
+    const jsonData = XLSX.utils.sheet_to_json(datas.Sheets[dataWorksheet]);
+    const sheets = {};
+    console.log(jsonData);
+    for (let i = 0; i < jsonData.length; i++) {
+        sheets[`Sheet ${i + 1}`] = await createTemplate(workbook, i + 1);
+        const cellC6 = sheets[`Sheet ${i + 1}`].getCell('C6');
+        cellC6.value = `${jsonData[i]['Customer ID']}`;
+
+        const cellC7 = sheets[`Sheet ${i + 1}`].getCell('C7');
+        cellC7.value = jsonData[i]['Customer Name'];
+
+        const cellC8 = sheets[`Sheet ${i + 1}`].getCell('C8');
+        cellC8.value = jsonData[i]['Tarif/Daya'];
+
+        const cellC9 = sheets[`Sheet ${i + 1}`].getCell('C9');
+        cellC9.value = `${jsonData[i]['Periode']}`
+
+        const cellC10 = sheets[`Sheet ${i + 1}`].getCell('C10');
+        cellC10.value = `${jsonData[i]['Stan Meter']}`;
+
+        const cellC11 = sheets[`Sheet ${i + 1}`].getCell('C11');
+        cellC11.value = `${jsonData[i]['SN']}`;
+        cellC11.alignment = {
+            wrapText: true
+        }
+
+        const cellC12 = sheets[`Sheet ${i + 1}`].getCell('C12');
+        cellC12.value = `Rp ${jsonData[i]['Base Bill'].toLocaleString('id-ID')}`;
+
+        const cellC13 = sheets[`Sheet ${i + 1}`].getCell('C13');
+        cellC13.value = `Rp ${jsonData[i]['Admin Fee'].toLocaleString('id-ID')}`;
+
+        const cellC14 = sheets[`Sheet ${i + 1}`].getCell('C14');
+        cellC14.value = `Rp ${jsonData[i]['Price'].toLocaleString('id-ID')}`;
+
+        const cellG6 = sheets[`Sheet ${i + 1}`].getCell('G6');
+        cellG6.value = `${jsonData[i]['Customer ID']}`;
+
+        const cellG7 = sheets[`Sheet ${i + 1}`].getCell('G7');
+        cellG7.value = jsonData[i]['Customer Name'];
+
+        const cellG8 = sheets[`Sheet ${i + 1}`].getCell('G8');
+        cellG8.value = jsonData[i]['Tarif/Daya'];
+
+        const cellG9 = sheets[`Sheet ${i + 1}`].getCell('G9');
+        cellG9.value = `Rp ${jsonData[i]['Base Bill'].toLocaleString('id-ID')}`;
+
+        const cellG10 = sheets[`Sheet ${i + 1}`].getCell('G10');
+        cellG10.value = `${jsonData[i]['SN']}`;
+
+        const cellG12 = sheets[`Sheet ${i + 1}`].getCell('G12');
+        cellG12.value = `Rp ${jsonData[i]['Admin Fee'].toLocaleString('id-ID')}`;
+
+        const cellG13 = sheets[`Sheet ${i + 1}`].getCell('G13');
+        cellG13.value = `Rp ${jsonData[i]['Price'].toLocaleString('id-ID')}`;
+
+        const cellJ1 = sheets[`Sheet ${i + 1}`].getCell('J1');
+        cellJ1.value = `${moment(excelDateToJsDate(jsonData[i]['Created Date'])).format('YYYY-MM-DD HH:mm:ss')}`;
+
+        const cellK6 = sheets[`Sheet ${i + 1}`].getCell('K6');
+        cellK6.value = `${jsonData[i]['Periode']}`;
+
+        const cellK7 = sheets[`Sheet ${i + 1}`].getCell('K7');
+        cellK7.value = `${jsonData[i]['Stan Meter']}`;
+
+        const listCells = [cellC6, cellC7, cellC8, cellC9, cellC10, cellC11, cellC12, cellC13, cellC14, cellG6, cellG7, cellG8, cellG9, cellG10, cellG12, cellG13, cellJ1, cellK6, cellK7];
+        const defaultFont = {
+            name: 'Arial',
+            size: 8,
+            bold: false,       // Optional: Set bold font
+            italic: false     // Optional: Set italic font
+        }
+        listCells.forEach((cell) => {
+            cell.font = defaultFont;
+        });
+
+        sheets[`Sheet ${i + 1}`].pageSetup.margins = {
+            left: 0.25,
+            right: 0.25,
+            top: 0.25,
+            bottom: 0.25,
+            header: 0.3,
+            footer: 0.3
+        }
+    }
+    // Save the workbook to a file
+    const filePath = `${file.originalname}`;
+    await workbook.xlsx.writeFile(filePath)
+        .then(() => {
+            console.log(`Workbook saved to ${filePath}`);
+        })
+        .catch((error) => {
+            console.error('Error writing workbook:', error);
+        });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename=' + `${file.originalname}`);
+    res.download(filePath, `${file.originalname}`, (err) => {
+        if (err) {
+            console.log(err);
+        }
+        fs.unlinkSync(filePath);
+        fs.unlinkSync(file.path);
+        // const uploadsDir = path.join(__dirname, 'uploads');
+        // fs.rm(uploadsDir, { recursive: true }, (err) => {
+        //     if (err) {
+        //         console.error('Error deleting uploads folder:', err);
+        //     } else {
+        //         console.log('Uploads folder deleted successfully');
+        //         // Recreate the uploads folder
+        //         fs.mkdir(uploadsDir, (err) => {
+        //             if (err) {
+        //                 console.error('Error creating uploads folder:', err);
+        //             } else {
+        //                 console.log('Uploads folder recreated successfully');
+        //             }
+        //         });
+        //     }
+        // });
+    });
+});
 
 
 app.listen(3000, () => {
