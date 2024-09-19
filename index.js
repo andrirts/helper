@@ -64,7 +64,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         { header: 'Partner Reff', key: 'Partner Reff', width: 25 },
         { header: 'Product Name', key: 'Product Name', width: 50 },
         { header: 'Billing Number', key: 'Billing Number', width: 25 },
-        { header: 'Biller Product Code', key: 'Biller Product Code', width: 25 },
+        // { header: 'Biller Product Code', key: 'Biller Product Code', width: 25 },
         { header: 'Sell Price', key: 'Sell Price', width: 25 },
         { header: 'Status', key: 'Status', width: 25 },
         { header: 'Serial Number', key: 'Serial Number', width: 50 },
@@ -83,7 +83,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     const via = workbook.SheetNames.find(sheetName => sheetName === 'VIA');
     const worksheetVia = workbook.Sheets[via];
     // Get the third sheet
-    const core = workbook.SheetNames.find(sheetName => sheetName === 'CORE');
+    const core = workbook.SheetNames.find(sheetName => sheetName === 'RTS');
     const worksheetCore = workbook.Sheets[core];
 
     // const alto = workbook.SheetNames.find(sheetName => sheetName === 'Alto');
@@ -109,21 +109,26 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     // const [unmatchedTokopediaWorkbook, unmatchedTokopediaWorksheet] = createExcelFile(columns);
 
     for (let i = 0; i < jsonDataCore.length; i++) {
-        console.log(i);
-        const isExistsOnCtiRiu = jsonDataCtiriu.find(item => item['TRANSACTION_ID'] === jsonDataCore[i]['Reff ID']);
+        // console.log(i);
+        // console.log(`0${jsonDataCtiriu[0]['BILL NUMBER']}`);
+        // console.log(jsonDataCore[i]['Tujuan']);
+        // const isExistsOnCtiRiu = jsonDataCtiriu.find(item => item['TRANSACTION_ID'] === jsonDataCore[i]['IDTRX']);
+        const isExistsOnCtiRiu = jsonDataCtiriu.find(item => {
+            return (`0${item['BILL NUMBER']}` === jsonDataCore[i]['Tujuan'] && item['SERIAL_NUMBER'] === jsonDataCore[i]['SN'])
+        });
         // const isExistsOnAlto = jsonDataAlto.find(item => item['Trx Reff ID'] === jsonDataCore[i]['Reff ID']);
         // const isExistsOnTokopedia = jsonDataTokopedia.find(item => item['Trx Reff ID'] === jsonDataCore[i]['Reff ID']);
-        const isExistsOnVia = jsonDataVia.find(item => item['Partner Reff'] === jsonDataCore[i]['Partner Reff']);
-
+        const isExistsOnVia = jsonDataVia.find(item => item['Partner Reff'] === jsonDataCore[i]['ReffClient']);
+        const splitTimeAndDate = jsonDataCore[i]['Waktu Trx'].split(" ");
         const inputtedData = {
-            'Transaction Date': jsonDataCore[i]['Transaction Date'],
-            'Transaction Time': jsonDataCore[i]['Transaction Time'],
-            'Reff ID': jsonDataCore[i]['Reff ID'],
-            'Partner Reff': jsonDataCore[i]['Partner Reff'],
-            'Product Name': jsonDataCore[i]['Product Name'],
-            'Billing Number': jsonDataCore[i]['Billing Number'],
-            'Biller Product Code': jsonDataCore[i]['Biller Product Code'],
-            'Sell Price': jsonDataCore[i]['Sell Price'],
+            'Transaction Date': splitTimeAndDate[0],
+            'Transaction Time': splitTimeAndDate[1],
+            'Reff ID': jsonDataCore[i]['IDTRX'],
+            'Partner Reff': jsonDataCore[i]['ReffClient'],
+            'Product Name': jsonDataCore[i]['KP'],
+            'Billing Number': jsonDataCore[i]['Tujuan'],
+            // 'Biller Product Code': jsonDataCore[i]['Biller Product Code'],
+            'Sell Price': jsonDataCore[i]['Harga'],
             'Status': jsonDataCore[i]['Status'],
             // 'Serial Number': serialNumber,
         };
@@ -147,34 +152,15 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         //     statusVia = 'Unmatch VIA';
         // }
 
-        let serialNumber = jsonDataCore[i]['Serial Number'];
+        let serialNumber = jsonDataCore[i]['SN'];
         if (!serialNumber) {
             serialNumber = isExistsOnCtiRiu ? isExistsOnCtiRiu['SERIAL_NUMBER'] : '';
         }
 
-        // if (statusRiu === 'Match' && statusVia === 'Match') {
-        //     matchedVIAWorksheet.addRow({
-        //         ...inputtedData,
-        //         'Serial Number': serialNumber,
-        //     });
-        // }
-        // if (statusRiu === 'Match' && statusVia === 'Unmatch VIA') {
-        //     unmatchedVIAWorksheet.addRow({
-        //         ...inputtedData,
-        //         'Serial Number': serialNumber,
-        //     })
-        // }
-        // if (statusRiu === 'Unmatch CTI RIU') {
-        //     unmatchedCtiriuWorksheet.addRow({
-        //         ...inputtedData,
-        //         'Serial Number': serialNumber,
-        //     })
-        // }
-
-        if (jsonDataCore[i]['Status'] === 'SUCCESS') {
+        if (jsonDataCore[i]['Status'] === 'SUKSES') {
             if (isExistsOnCtiRiu) {
-                if (jsonDataCore[i]['Partner App Name'] === 'VIA' || jsonDataCore[i]['Partner App Name'] === 'VIA_SOLUTAIRE') {
-                    if (isExistsOnVia) {
+                if (jsonDataCore[i]['Nama Reseller'] === 'PT VIA YOTTA BYTE') {
+                    if (isExistsOnVia && isExistsOnVia['Status'] === 'SUCCESS') {
                         await matchedVIAWorksheet.addRow({
                             ...inputtedData,
                             'Serial Number': serialNumber,
@@ -187,8 +173,8 @@ app.post('/upload', upload.single('file'), async (req, res) => {
                     }
                 }
             } else {
-                if (jsonDataCore[i]['Partner App Name'] === 'VIA' || jsonDataCore[i]['Partner App Name'] === 'VIA_SOLUTAIRE') {
-                    if (isExistsOnVia) {
+                if (jsonDataCore[i]['Nama Reseller'] === 'PT VIA YOTTA BYTE') {
+                    if (isExistsOnVia && isExistsOnVia['Status'] === 'SUCCESS') {
                         await unmatchedCtiriuWorksheet.addRow({
                             ...inputtedData,
                             'Serial Number': serialNumber,
@@ -207,8 +193,8 @@ app.post('/upload', upload.single('file'), async (req, res) => {
             }
         } else {
             if (isExistsOnCtiRiu) {
-                if (jsonDataCore[i]['Partner App Name'] === 'VIA' || jsonDataCore[i]['Partner App Name'] === 'VIA_SOLUTAIRE') {
-                    if (isExistsOnVia) {
+                if (jsonDataCore[i]['Nama Reseller'] === 'PT VIA YOTTA BYTE') {
+                    if (isExistsOnVia && isExistsOnVia['Status'] === 'SUCCESS') {
                         await matchedVIAWorksheet.addRow({
                             ...inputtedData,
                             'Serial Number': serialNumber,
@@ -221,14 +207,18 @@ app.post('/upload', upload.single('file'), async (req, res) => {
                     }
                 }
             } else {
-                if (jsonDataCore[i]['Partner App Name'] === 'VIA' || jsonDataCore[i]['Partner App Name'] === 'VIA_SOLUTAIRE') {
-                    if (isExistsOnVia) {
+                if (jsonDataCore[i]['Nama Reseller'] === 'PT VIA YOTTA BYTE') {
+                    if (isExistsOnVia && isExistsOnVia['Status'] === 'SUCCESS') {
                         await unmatchedVIAWorksheet.addRow({
                             ...inputtedData,
                             'Serial Number': serialNumber,
                         })
                     } else {
-                        await unmatchedWorksheet.addRow({
+                        // await unmatchedWorksheet.addRow({
+                        //     ...inputtedData,
+                        //     'Serial Number': serialNumber,
+                        // })
+                        await matchedVIAWorksheet.addRow({
                             ...inputtedData,
                             'Serial Number': serialNumber,
                         })
