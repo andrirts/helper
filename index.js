@@ -24,24 +24,35 @@ function createExcelFile(columns) {
 }
 
 function excelDateToJsDate(serial) {
-    // Excel date serial number is the number of days since January 1, 1900
-    const excelEpoch = new Date(Date.UTC(1900, 0, 1));
-    // Adjust for Excel leap year bug
-    const excelDate = new Date(excelEpoch.getTime() + (serial - 1) * 24 * 60 * 60 * 1000);
+    const msPerDay = 86400000; // Number of milliseconds in a day
+    const excelEpoch = new Date(1899, 11, 30); // Excel's epoch for serial numbers
 
-    // Extract fractional part to calculate time
-    const timePortion = serial % 1;
-    const hours = Math.floor(timePortion * 24);
-    const minutes = Math.floor((timePortion * 24 - hours) * 60);
-    const seconds = Math.floor(((timePortion * 24 - hours) * 60 - minutes) * 60);
+    let days = Math.floor(serial); // Integer part for days
+    let timeFraction = serial - days; // Fractional part for time
 
-    // Add time to the date
-    excelDate.setUTCHours(hours, minutes, seconds);
+    // Correct for the Excel leap year bug by adding an extra day
+    days += 1; // Adjust for the missing leap year issue
 
-    const offset = 7 * 60;
-    excelDate.setUTCMinutes(excelDate.getUTCMinutes() + offset);
+    // Get the date part
+    const jsDate = new Date(excelEpoch.getTime() + days * msPerDay);
 
-    return excelDate;
+    // Extract time components from the fractional part
+    let totalSecondsInDay = 24 * 60 * 60; // Total seconds in a day
+    let timeInSeconds = Math.round(timeFraction * totalSecondsInDay); // Time in seconds from fraction
+
+    // Calculate hours, minutes, and seconds
+    let hours = Math.floor(timeInSeconds / 3600);
+    let minutes = Math.floor((timeInSeconds % 3600) / 60);
+    let seconds = timeInSeconds % 60;
+
+    // Set the time part explicitly
+    jsDate.setHours(hours, minutes, seconds);
+
+    // Log formatted date using moment.js
+    console.log(serial);
+    console.log(moment(jsDate).format('YYYY-MM-DD HH:mm:ss'));
+
+    return jsDate;
 }
 
 app.get("/", (req, res, next) => {
@@ -119,6 +130,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         // const isExistsOnAlto = jsonDataAlto.find(item => item['Trx Reff ID'] === jsonDataCore[i]['Reff ID']);
         // const isExistsOnTokopedia = jsonDataTokopedia.find(item => item['Trx Reff ID'] === jsonDataCore[i]['Reff ID']);
         const isExistsOnVia = jsonDataVia.find(item => item['Partner Reff'] === jsonDataCore[i]['ReffClient']);
+        console.log(jsonDataCore[i]['Waktu Trx']);
         const splitTimeAndDate = jsonDataCore[i]['Waktu Trx'].split(" ");
         const inputtedData = {
             'Transaction Date': splitTimeAndDate[0],
@@ -356,7 +368,7 @@ app.post('/upload-struk-pln', upload.single('file'), async (req, res) => {
     const dataWorksheet = datas.SheetNames[0];
     const jsonData = XLSX.utils.sheet_to_json(datas.Sheets[dataWorksheet]);
     const sheets = {};
-    console.log(jsonData);
+    // console.log(jsonData);
     for (let i = 0; i < jsonData.length; i++) {
         sheets[`Sheet ${i + 1}`] = await createTemplate(workbook, i + 1);
         const cellC6 = sheets[`Sheet ${i + 1}`].getCell('C6');
