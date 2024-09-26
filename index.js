@@ -114,23 +114,20 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     const [unmatchedVIAWorkbook, unmatchedVIAWorksheet] = createExcelFile(columns);
     const [unmatchedCtiriuWorkbook, unmatchedCtiriuWorksheet] = createExcelFile(columns);
     const [unmatchedWorkbook, unmatchedWorksheet] = createExcelFile(columns);
+
+    const [matchedDMNWorkbook, matchedDMNWorksheet] = createExcelFile(columns);
+    const [unmatchedDMNWorkbook, unmatchedDMNWorksheet] = createExcelFile(columns);
+
     // const [matchedAltoWorkbook, matchedAltoWorksheet] = createExcelFile(columns);
     // const [unmatchedAltoWorkbook, unmatchedAltoWorksheet] = createExcelFile(columns);
     // const [matchedTokopediaWorkbook, matchedTokopediaWorksheet] = createExcelFile(columns);
     // const [unmatchedTokopediaWorkbook, unmatchedTokopediaWorksheet] = createExcelFile(columns);
 
     for (let i = 0; i < jsonDataCore.length; i++) {
-        // console.log(i);
-        // console.log(`0${jsonDataCtiriu[0]['BILL NUMBER']}`);
-        // console.log(jsonDataCore[i]['Tujuan']);
-        // const isExistsOnCtiRiu = jsonDataCtiriu.find(item => item['TRANSACTION_ID'] === jsonDataCore[i]['IDTRX']);
         const isExistsOnCtiRiu = jsonDataCtiriu.find(item => {
             return (`0${item['BILL NUMBER']}` === jsonDataCore[i]['Tujuan'] && item['SERIAL_NUMBER'] === jsonDataCore[i]['SN'])
         });
-        // const isExistsOnAlto = jsonDataAlto.find(item => item['Trx Reff ID'] === jsonDataCore[i]['Reff ID']);
-        // const isExistsOnTokopedia = jsonDataTokopedia.find(item => item['Trx Reff ID'] === jsonDataCore[i]['Reff ID']);
         const isExistsOnVia = jsonDataVia.find(item => item['Partner Reff'] === jsonDataCore[i]['ReffClient']);
-        console.log(jsonDataCore[i]['Waktu Trx']);
         const splitTimeAndDate = jsonDataCore[i]['Waktu Trx'].split(" ");
         const inputtedData = {
             'Transaction Date': splitTimeAndDate[0],
@@ -139,30 +136,9 @@ app.post('/upload', upload.single('file'), async (req, res) => {
             'Partner Reff': jsonDataCore[i]['ReffClient'],
             'Product Name': jsonDataCore[i]['KP'],
             'Billing Number': jsonDataCore[i]['Tujuan'],
-            // 'Biller Product Code': jsonDataCore[i]['Biller Product Code'],
             'Sell Price': jsonDataCore[i]['Harga'],
             'Status': jsonDataCore[i]['Status'],
-            // 'Serial Number': serialNumber,
         };
-
-        // let statusRiu = '';
-        // let statusVia = '';
-
-        // if (isExistsOnCtiRiu) {
-        //     statusRiu = 'Match';
-        // } else {
-        //     if (jsonDataCore[i]['Status'] === 'SUCCESS') {
-        //         statusRiu = 'Match';
-        //     } else {
-        //         statusRiu = 'Unmatch CTI RIU';
-        //     }
-        // }
-
-        // if (isExistsOnVia) {
-        //     statusVia = isExistsOnVia['Status'] === jsonDataCore[i]['Status'] ? 'Match' : 'Unmatch VIA';
-        // } else {
-        //     statusVia = 'Unmatch VIA';
-        // }
 
         let serialNumber = jsonDataCore[i]['SN'];
         if (!serialNumber) {
@@ -183,6 +159,11 @@ app.post('/upload', upload.single('file'), async (req, res) => {
                             'Serial Number': serialNumber,
                         })
                     }
+                } else if (jsonDataCore[i]['Nama Reseller'] === 'PT DIGITAL MEGAH NUSANTARA') {
+                    await matchedDMNWorksheet.addRow({
+                        ...inputtedData,
+                        'Serial Number': serialNumber,
+                    })
                 }
             } else {
                 if (jsonDataCore[i]['Nama Reseller'] === 'PT VIA YOTTA BYTE') {
@@ -195,12 +176,18 @@ app.post('/upload', upload.single('file'), async (req, res) => {
                             ...inputtedData,
                             'Serial Number': serialNumber,
                         })
-                    } else {
+                    }
+                    else {
                         await unmatchedWorksheet.addRow({
                             ...inputtedData,
                             'Serial Number': serialNumber,
                         })
                     }
+                } else if (jsonDataCore[i]['Nama Reseller'] === 'PT DIGITAL MEGAH NUSANTARA') {
+                    await unmatchedDMNWorksheet.addRow({
+                        ...inputtedData,
+                        'Serial Number': serialNumber,
+                    })
                 }
             }
         } else {
@@ -218,6 +205,12 @@ app.post('/upload', upload.single('file'), async (req, res) => {
                         })
                     }
                 }
+                else if (jsonDataCore[i]['Nama Reseller'] === 'PT DIGITAL MEGAH NUSANTARA') {
+                    await unmatchedDMNWorksheet.addRow({
+                        ...inputtedData,
+                        'Serial Number': serialNumber,
+                    })
+                }
             } else {
                 if (jsonDataCore[i]['Nama Reseller'] === 'PT VIA YOTTA BYTE') {
                     if (isExistsOnVia && isExistsOnVia['Status'] === 'SUCCESS') {
@@ -226,15 +219,16 @@ app.post('/upload', upload.single('file'), async (req, res) => {
                             'Serial Number': serialNumber,
                         })
                     } else {
-                        // await unmatchedWorksheet.addRow({
-                        //     ...inputtedData,
-                        //     'Serial Number': serialNumber,
-                        // })
                         await matchedVIAWorksheet.addRow({
                             ...inputtedData,
                             'Serial Number': serialNumber,
                         })
                     }
+                } else if (jsonDataCore[i]['Nama Reseller'] === 'PT DIGITAL MEGAH NUSANTARA') {
+                    await matchedDMNWorksheet.addRow({
+                        ...inputtedData,
+                        'Serial Number': serialNumber,
+                    })
                 }
             }
         }
@@ -252,17 +246,11 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     const unmatchedCtiriuExcelFilePath = path.join(__dirname, 'zipped', moment().format('YYYY-MM-DD') + ' Unmatched CTI RIU' + '.xlsx');
     await unmatchedCtiriuWorkbook.xlsx.writeFile(unmatchedCtiriuExcelFilePath);
 
-    // const matchedAltoExcelFilePath = path.join(__dirname, 'zipped', moment().format('YYYY-MM-DD') + ' Matched ALTO' + '.xlsx');
-    // await matchedAltoWorkbook.xlsx.writeFile(matchedAltoExcelFilePath);
+    const matchedDMNExcelFilePath = path.join(__dirname, 'zipped', moment().format('YYYY-MM-DD') + ' Matched DMN' + '.xlsx');
+    await matchedDMNWorkbook.xlsx.writeFile(matchedDMNExcelFilePath);
 
-    // const unmatchedAltoExcelFilePath = path.join(__dirname, 'zipped', moment().format('YYYY-MM-DD') + ' Unmatched ALTO' + '.xlsx');
-    // await unmatchedAltoWorkbook.xlsx.writeFile(unmatchedAltoExcelFilePath);
-
-    // const matchedTokopediaExcelFilePath = path.join(__dirname, 'zipped', moment().format('YYYY-MM-DD') + ' Matched TOKOPEDIA' + '.xlsx');
-    // await matchedTokopediaWorkbook.xlsx.writeFile(matchedTokopediaExcelFilePath);
-
-    // const unmatchedTokopediaExcelFilePath = path.join(__dirname, 'zipped', moment().format('YYYY-MM-DD') + ' Unmatched TOKOPEDIA' + '.xlsx');
-    // await unmatchedTokopediaWorkbook.xlsx.writeFile(unmatchedTokopediaExcelFilePath);
+    const unmatchedDMNExcelFilePath = path.join(__dirname, 'zipped', moment().format('YYYY-MM-DD') + ' Unmatched DMN' + '.xlsx');
+    await unmatchedDMNWorkbook.xlsx.writeFile(unmatchedDMNExcelFilePath);
 
     console.log('Excel file successfully written');
     const folderPath = path.join(__dirname, 'zipped');
