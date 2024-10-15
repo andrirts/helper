@@ -50,9 +50,10 @@ function excelDateToJsDate(serial) {
 
     // Log formatted date using moment.js
     console.log(serial);
-    console.log(moment(jsDate).format('YYYY-MM-DD HH:mm:ss'));
+    console.log(moment(serial, 'DD/MM/YYYY HH:mm').format('YYYY-MM-DD HH:mm'));
+    // console.log(moment(jsDate).format('YYYY-MM-DD HH:mm'));
 
-    return jsDate;
+    return moment(serial, 'DD/MM/YYYY HH:mm').format('YYYY-MM-DD HH:mm');
 }
 
 app.get("/", (req, res, next) => {
