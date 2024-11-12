@@ -49,11 +49,11 @@ function excelDateToJsDate(serial) {
     jsDate.setHours(hours, minutes, seconds);
 
     // Log formatted date using moment.js
-    console.log(serial);
-    console.log(moment(serial, 'DD/MM/YYYY HH:mm').format('YYYY-MM-DD HH:mm'));
+    // console.log(serial);
     // console.log(moment(jsDate).format('YYYY-MM-DD HH:mm'));
+    // console.log(jsDate)
 
-    return moment(serial, 'DD/MM/YYYY HH:mm').format('YYYY-MM-DD HH:mm');
+    return moment(jsDate, 'DD/MM/YYYY HH:mm').format('YYYY-MM-DD HH:mm');
 }
 
 app.get("/", (req, res, next) => {
