@@ -126,7 +126,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
     for (let i = 0; i < jsonDataCore.length; i++) {
         const isExistsOnCtiRiu = jsonDataCtiriu.find(item => {
-            return (`0${item['BILL NUMBER']}` === jsonDataCore[i]['Tujuan'] && item['SERIAL_NUMBER'] === jsonDataCore[i]['SN'])
+            return (item['SERIAL_NUMBER'] === jsonDataCore[i]['SN'])
         });
         const isExistsOnVia = jsonDataVia.find(item => item['Partner Reff'] === jsonDataCore[i]['ReffClient']);
         const splitTimeAndDate = jsonDataCore[i]['Waktu Trx'].split(" ");
