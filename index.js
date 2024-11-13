@@ -119,6 +119,15 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     const [matchedDMNWorkbook, matchedDMNWorksheet] = createExcelFile(columns);
     const [unmatchedDMNWorkbook, unmatchedDMNWorksheet] = createExcelFile(columns);
 
+    const [matchedMKIWorkbook, matchedMKIWorksheet] = createExcelFile(columns);
+    const [unmatchedMKIWorkbook, unmatchedMKIWorksheet] = createExcelFile(columns);
+
+    const [matchedSATCTIWorkbook, matchedSATCTIWorksheet] = createExcelFile(columns);
+    const [unmatchedSATCTIWorkbook, unmatchedSATCTIWorksheet] = createExcelFile(columns);
+
+    const [matchedSATRIUWorkbook, matchedSATRIUWorksheet] = createExcelFile(columns);
+    const [unmatchedSATRIUWorkbook, unmatchedSATRIUWorksheet] = createExcelFile(columns);
+
     // const [matchedAltoWorkbook, matchedAltoWorksheet] = createExcelFile(columns);
     // const [unmatchedAltoWorkbook, unmatchedAltoWorksheet] = createExcelFile(columns);
     // const [matchedTokopediaWorkbook, matchedTokopediaWorksheet] = createExcelFile(columns);
@@ -165,6 +174,23 @@ app.post('/upload', upload.single('file'), async (req, res) => {
                         ...inputtedData,
                         'Serial Number': serialNumber,
                     })
+                } else if (jsonDataCore[i]['Nama Reseller'] === 'PT MEGA KREASI INDOTAMA') {
+                    await matchedMKIWorksheet.addRow({
+                        ...inputtedData,
+                        'Serial Number': serialNumber,
+                    })
+                }
+                else if (jsonDataCore[i]['Nama Reseller'] === 'PT SATRIA ABADI TERPADU - CTI') {
+                    await matchedSATCTIWorksheet.addRow({
+                        ...inputtedData,
+                        'Serial Number': serialNumber,
+                    })
+                }
+                else if (jsonDataCore[i]['Nama Reseller'] === 'PT SATRIA ABADI TERPADU - RIU') {
+                    await matchedSATRIUWorksheet.addRow({
+                        ...inputtedData,
+                        'Serial Number': serialNumber,
+                    })
                 }
             } else {
                 if (jsonDataCore[i]['Nama Reseller'] === 'PT VIA YOTTA BYTE') {
@@ -186,6 +212,23 @@ app.post('/upload', upload.single('file'), async (req, res) => {
                     }
                 } else if (jsonDataCore[i]['Nama Reseller'] === 'PT DIGITAL MEGAH NUSANTARA') {
                     await unmatchedDMNWorksheet.addRow({
+                        ...inputtedData,
+                        'Serial Number': serialNumber,
+                    })
+                } else if (jsonDataCore[i]['Nama Reseller'] === 'PT MEGA KREASI INDOTAMA') {
+                    await unmatchedMKIWorksheet.addRow({
+                        ...inputtedData,
+                        'Serial Number': serialNumber,
+                    })
+                }
+                else if (jsonDataCore[i]['Nama Reseller'] === 'PT SATRIA ABADI TERPADU - CTI') {
+                    await unmatchedSATCTIWorksheet.addRow({
+                        ...inputtedData,
+                        'Serial Number': serialNumber,
+                    })
+                }
+                else if (jsonDataCore[i]['Nama Reseller'] === 'PT SATRIA ABADI TERPADU - RIU') {
+                    await unmatchedSATRIUWorksheet.addRow({
                         ...inputtedData,
                         'Serial Number': serialNumber,
                     })
@@ -212,6 +255,24 @@ app.post('/upload', upload.single('file'), async (req, res) => {
                         'Serial Number': serialNumber,
                     })
                 }
+                else if (jsonDataCore[i]['Nama Reseller'] === 'PT MEGA KREASI INDOTAMA') {
+                    await unmatchedMKIWorksheet.addRow({
+                        ...inputtedData,
+                        'Serial Number': serialNumber,
+                    })
+                }
+                else if (jsonDataCore[i]['Nama Reseller'] === 'PT SATRIA ABADI TERPADU - CTI') {
+                    await unmatchedSATCTIWorksheet.addRow({
+                        ...inputtedData,
+                        'Serial Number': serialNumber,
+                    })
+                }
+                else if (jsonDataCore[i]['Nama Reseller'] === 'PT SATRIA ABADI TERPADU - RIU') {
+                    await unmatchedSATRIUWorksheet.addRow({
+                        ...inputtedData,
+                        'Serial Number': serialNumber,
+                    })
+                }
             } else {
                 if (jsonDataCore[i]['Nama Reseller'] === 'PT VIA YOTTA BYTE') {
                     if (isExistsOnVia && isExistsOnVia['Status'] === 'SUCCESS') {
@@ -227,6 +288,24 @@ app.post('/upload', upload.single('file'), async (req, res) => {
                     }
                 } else if (jsonDataCore[i]['Nama Reseller'] === 'PT DIGITAL MEGAH NUSANTARA') {
                     await matchedDMNWorksheet.addRow({
+                        ...inputtedData,
+                        'Serial Number': serialNumber,
+                    })
+                }
+                else if (jsonDataCore[i]['Nama Reseller'] === 'PT MEGA KREASI INDOTAMA') {
+                    await matchedMKIWorksheet.addRow({
+                        ...inputtedData,
+                        'Serial Number': serialNumber,
+                    })
+                }
+                else if (jsonDataCore[i]['Nama Reseller'] === 'PT SATRIA ABADI TERPADU - CTI') {
+                    await matchedSATCTIWorksheet.addRow({
+                        ...inputtedData,
+                        'Serial Number': serialNumber,
+                    })
+                }
+                else if (jsonDataCore[i]['Nama Reseller'] === 'PT SATRIA ABADI TERPADU - RIU') {
+                    await matchedSATRIUWorksheet.addRow({
                         ...inputtedData,
                         'Serial Number': serialNumber,
                     })
@@ -252,6 +331,24 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
     const unmatchedDMNExcelFilePath = path.join(__dirname, 'zipped', moment().format('YYYY-MM-DD') + ' Unmatched DMN' + '.xlsx');
     await unmatchedDMNWorkbook.xlsx.writeFile(unmatchedDMNExcelFilePath);
+
+    const matchedMKIExcelFilePath = path.join(__dirname, 'zipped', moment().format('YYYY-MM-DD') + ' Matched MKI' + '.xlsx');
+    await matchedMKIWorkbook.xlsx.writeFile(matchedMKIExcelFilePath);
+
+    const unmatchedMKIExcelFilePath = path.join(__dirname, 'zipped', moment().format('YYYY-MM-DD') + ' Unmatched MKI' + '.xlsx');
+    await unmatchedMKIWorkbook.xlsx.writeFile(unmatchedMKIExcelFilePath);
+
+    const matchedSATCTIExcelFilePath = path.join(__dirname, 'zipped', moment().format('YYYY-MM-DD') + ' Matched SATCTI' + '.xlsx');
+    await matchedSATCTIWorkbook.xlsx.writeFile(matchedSATCTIExcelFilePath);
+
+    const unmatchedSATCTIExcelFilePath = path.join(__dirname, 'zipped', moment().format('YYYY-MM-DD') + ' Unmatched SATCTI' + '.xlsx');
+    await unmatchedSATCTIWorkbook.xlsx.writeFile(unmatchedSATCTIExcelFilePath);
+
+    const matchedSATRIUExcelFilePath = path.join(__dirname, 'zipped', moment().format('YYYY-MM-DD') + ' Matched SATRIU' + '.xlsx');
+    await matchedSATRIUWorkbook.xlsx.writeFile(matchedSATRIUExcelFilePath);
+
+    const unmatchedSATRIUExcelFilePath = path.join(__dirname, 'zipped', moment().format('YYYY-MM-DD') + ' Unmatched SATRIU' + '.xlsx');
+    await unmatchedSATRIUWorkbook.xlsx.writeFile(unmatchedSATRIUExcelFilePath);
 
     console.log('Excel file successfully written');
     const folderPath = path.join(__dirname, 'zipped');
