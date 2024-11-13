@@ -128,6 +128,9 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     const [matchedSATRIUWorkbook, matchedSATRIUWorksheet] = createExcelFile(columns);
     const [unmatchedSATRIUWorkbook, unmatchedSATRIUWorksheet] = createExcelFile(columns);
 
+    const [matchedFortunaWorkbook, matchedFortunaWorksheet] = createExcelFile(columns);
+    const [unmatchedFortunaWorkbook, unmatchedFortunaWorksheet] = createExcelFile(columns);
+
     // const [matchedAltoWorkbook, matchedAltoWorksheet] = createExcelFile(columns);
     // const [unmatchedAltoWorkbook, unmatchedAltoWorksheet] = createExcelFile(columns);
     // const [matchedTokopediaWorkbook, matchedTokopediaWorksheet] = createExcelFile(columns);
@@ -192,6 +195,12 @@ app.post('/upload', upload.single('file'), async (req, res) => {
                         'Serial Number': serialNumber,
                     })
                 }
+                else if (jsonDataCore[i]['Nama Reseller'] === 'PT FORTUNA MEDIATAMA') {
+                    await matchedFortunaWorksheet.addRow({
+                        ...inputtedData,
+                        'Serial Number': serialNumber,
+                    })
+                }
             } else {
                 if (jsonDataCore[i]['Nama Reseller'] === 'PT VIA YOTTA BYTE') {
                     if (isExistsOnVia && isExistsOnVia['Status'] === 'SUCCESS') {
@@ -229,6 +238,12 @@ app.post('/upload', upload.single('file'), async (req, res) => {
                 }
                 else if (jsonDataCore[i]['Nama Reseller'] === 'PT SATRIA ABADI TERPADU - RIU') {
                     await unmatchedSATRIUWorksheet.addRow({
+                        ...inputtedData,
+                        'Serial Number': serialNumber,
+                    })
+                }
+                else if (jsonDataCore[i]['Nama Reseller'] === 'PT FORTUNA MEDIATAMA') {
+                    await unmatchedFortunaWorksheet.addRow({
                         ...inputtedData,
                         'Serial Number': serialNumber,
                     })
@@ -273,6 +288,12 @@ app.post('/upload', upload.single('file'), async (req, res) => {
                         'Serial Number': serialNumber,
                     })
                 }
+                else if (jsonDataCore[i]['Nama Reseller'] === 'PT FORTUNA MEDIATAMA') {
+                    await unmatchedFortunaWorksheet.addRow({
+                        ...inputtedData,
+                        'Serial Number': serialNumber,
+                    })
+                }
             } else {
                 if (jsonDataCore[i]['Nama Reseller'] === 'PT VIA YOTTA BYTE') {
                     if (isExistsOnVia && isExistsOnVia['Status'] === 'SUCCESS') {
@@ -306,6 +327,12 @@ app.post('/upload', upload.single('file'), async (req, res) => {
                 }
                 else if (jsonDataCore[i]['Nama Reseller'] === 'PT SATRIA ABADI TERPADU - RIU') {
                     await matchedSATRIUWorksheet.addRow({
+                        ...inputtedData,
+                        'Serial Number': serialNumber,
+                    })
+                }
+                else if (jsonDataCore[i]['Nama Reseller'] === 'PT FORTUNA MEDIATAMA') {
+                    await matchedFortunaWorksheet.addRow({
                         ...inputtedData,
                         'Serial Number': serialNumber,
                     })
@@ -349,6 +376,12 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
     const unmatchedSATRIUExcelFilePath = path.join(__dirname, 'zipped', moment().format('YYYY-MM-DD') + ' Unmatched SATRIU' + '.xlsx');
     await unmatchedSATRIUWorkbook.xlsx.writeFile(unmatchedSATRIUExcelFilePath);
+
+    const matchedFortunaExcelFilePath = path.join(__dirname, 'zipped', moment().format('YYYY-MM-DD') + ' Matched Fortuna' + '.xlsx');
+    await matchedFortunaWorkbook.xlsx.writeFile(matchedFortunaExcelFilePath);
+
+    const unmatchedFortunaExcelFilePath = path.join(__dirname, 'zipped', moment().format('YYYY-MM-DD') + ' Unmatched Fortuna' + '.xlsx');
+    await unmatchedFortunaWorkbook.xlsx.writeFile(unmatchedFortunaExcelFilePath);
 
     console.log('Excel file successfully written');
     const folderPath = path.join(__dirname, 'zipped');
