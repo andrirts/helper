@@ -8,6 +8,8 @@ const moment = require('moment');
 const archiver = require('archiver');
 const { queryDatabase } = require('./database');
 const createTemplate = require('./template-struk-listrik');
+const createTemplatePrepaid = require('./template-struk-prepaid-pln');
+const { generateRandomAlphanumeric } = require('./helper');
 
 const app = express();
 const upload = multer({ dest: 'uploads/' });
@@ -606,6 +608,201 @@ app.post('/upload-struk-pln', upload.single('file'), async (req, res) => {
         // });
     });
 });
+
+app.post('/upload-struk-pln-prepaid', upload.single('file'), async (req, res) => {
+    const file = req.file;
+    if (!file) {
+        return res.status(400).send('No file uploaded');
+    }
+    const workbook = new ExcelJS.Workbook();
+    const datas = XLSX.readFile(file.path);
+    const dataWorksheet = datas.SheetNames[0];
+    const jsonData = XLSX.utils.sheet_to_json(datas.Sheets[dataWorksheet]);
+    const sheets = {};
+    for (let i = 0; i < jsonData.length; i++) {
+        sheets[`Sheet ${i + 1}`] = await createTemplatePrepaid(workbook, i + 1);
+        const noRef = generateRandomAlphanumeric(32);
+        const cellC6 = sheets[`Sheet ${i + 1}`].getCell('C6');
+        cellC6.value = `${jsonData[i]['Transaction ID']}`;
+
+        const cellC7 = sheets[`Sheet ${i + 1}`].getCell('C7');
+        cellC7.value = `${jsonData[i]['Customer ID']}`;
+
+        const cellC8 = sheets[`Sheet ${i + 1}`].getCell('C8');
+        cellC8.value = jsonData[i]['Customer Name'];
+
+        const cellC9 = sheets[`Sheet ${i + 1}`].getCell('C9');
+        cellC9.value = `${jsonData[i]['Tarif/Daya']}`
+
+        const cellC10 = sheets[`Sheet ${i + 1}`].getCell('C10');
+        cellC10.value = `${noRef}`;
+        cellC10.alignment = {
+            wrapText: true,
+            vertical: 'center'
+        }
+
+        const cellC12 = sheets[`Sheet ${i + 1}`].getCell('C12');
+        cellC12.value = `Rp ${jsonData[i]['Price'].toLocaleString('id-ID')}`;
+
+        const cellG6 = sheets[`Sheet ${i + 1}`].getCell('G6');
+        cellG6.value = `${jsonData[i]['Transaction ID']}`;
+
+        const cellG7 = sheets[`Sheet ${i + 1}`].getCell('G7');
+        cellG7.value = `${jsonData[i]['Customer ID']}`;
+
+        const cellG8 = sheets[`Sheet ${i + 1}`].getCell('G8');
+        cellG8.value = jsonData[i]['Customer Name'];
+
+        const cellG9 = sheets[`Sheet ${i + 1}`].getCell('G9');
+        cellG9.value = `${jsonData[i]['Tarif/Daya']}`
+
+        const cellG10 = sheets[`Sheet ${i + 1}`].getCell('G10');
+        cellG10.value = `${noRef}`;
+
+        cellG10.alignment = {
+            wrapText: true,
+            vertical: 'center',
+        }
+
+        const cellG11 = sheets[`Sheet ${i + 1}`].getCell('G11');
+        cellG11.value = `Rp ${jsonData[i]['Price'].toLocaleString('id-ID')}`;
+
+        const cellG13 = sheets[`Sheet ${i + 1}`].getCell('G13');
+        cellG13.value = `${jsonData[i]['SN']}`;
+        cellG13.font = {
+            name: "Arial",
+            size: 11,
+            bold: true, // Optional: Set bold font
+            italic: false, // Optional: Set italic font
+        };
+
+        const cellK1 = sheets[`Sheet ${i + 1}`].getCell('K1');
+        cellK1.value = `${moment(excelDateToJsDate(jsonData[i]['Created Date'])).format('YYYY/MM/DD HH:mm')}`;
+
+        const cellK6 = sheets[`Sheet ${i + 1}`].getCell('K6');
+        cellK6.value = `Rp ${jsonData[i]['Materai']?.toLocaleString('id-ID') || '0'}`;
+
+        const cellK7 = sheets[`Sheet ${i + 1}`].getCell('K7');
+        cellK7.value = `Rp ${jsonData[i]['PPN']?.toLocaleString('id-ID') || '0'}`;
+
+        const cellK8 = sheets[`Sheet ${i + 1}`].getCell('K8');
+        cellK8.value = `Rp ${jsonData[i]['PPJ']?.toLocaleString('id-ID') || '0'}`;
+
+        const cellK9 = sheets[`Sheet ${i + 1}`].getCell('K9');
+        cellK9.value = `Rp ${jsonData[i]['ANGSURAN']?.toLocaleString('id-ID') || '0'}`;
+
+        const cellK10 = sheets[`Sheet ${i + 1}`].getCell('K10');
+        cellK10.value = `Rp ${jsonData[i]['Price'].toLocaleString('id-ID')}`;
+
+        const cellK11 = sheets[`Sheet ${i + 1}`].getCell('K11');
+        cellK11.value = `${jsonData[i]['Total kWh']}`;
+
+        const cellK12 = sheets[`Sheet ${i + 1}`].getCell('K12');
+        cellK12.value = `Rp ${jsonData[i]['Admin Fee'].toLocaleString('id-ID')}`;
+
+        const cellA19 = sheets[`Sheet ${i + 1}`].getCell('A19');
+        cellA19.value = `*** CSRTS-(${moment(excelDateToJsDate(jsonData[i]['Created Date'])).format('YYYY/MM/DD HH:mm')})***`;
+
+        const cellE19 = sheets[`Sheet ${i + 1}`].getCell('E19');
+        cellE19.value = `*** CSRTS-(${moment(excelDateToJsDate(jsonData[i]['Created Date'])).format('YYYY/MM/DD HH:mm')})***`;
+
+        const cellI19 = sheets[`Sheet ${i + 1}`].getCell('I19');
+        cellI19.value = `*** CSRTS-(${moment(excelDateToJsDate(jsonData[i]['Created Date'])).format('YYYY/MM/DD HH:mm')})***`;
+
+        cellA19.alignment = {
+            vertical: "bottom",
+            horizontal: "center",
+        };
+
+        cellE19.alignment = {
+            vertical: "bottom",
+            horizontal: "center",
+        };
+
+        cellI19.alignment = {
+            vertical: "bottom",
+            horizontal: "center",
+        };
+
+        const listCells = [
+            cellC6,
+            cellC7,
+            cellC8,
+            cellC9,
+            cellC10,
+            cellC12,
+            cellG6,
+            cellG7,
+            cellG8,
+            cellG9,
+            cellG10,
+            cellG11,
+            cellK1,
+            cellK6,
+            cellK7,
+            cellK8,
+            cellK9,
+            cellK10,
+            cellK11,
+            cellK12,
+            cellA19,
+            cellE19,
+            cellI19];
+        const defaultFont = {
+            name: "Arial",
+            size: 8,
+            bold: false, // Optional: Set bold font
+            italic: false, // Optional: Set italic font
+        };
+        listCells.forEach((cell) => {
+            cell.font = defaultFont;
+        });
+
+        sheets[`Sheet ${i + 1}`].pageSetup.margins = {
+            left: 0.25,
+            right: 0.25,
+            top: 0.25,
+            bottom: 0.25,
+            header: 0.3,
+            footer: 0.3
+        }
+    }
+
+    const filePath = `${file.originalname}`;
+    await workbook.xlsx.writeFile(filePath)
+        .then(() => {
+            console.log(`Workbook saved to ${filePath}`);
+        })
+        .catch((error) => {
+            console.error('Error writing workbook:', error);
+        });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename=' + `${file.originalname}`);
+    res.download(filePath, `${file.originalname}`, (err) => {
+        if (err) {
+            console.log(err);
+        }
+        fs.unlinkSync(filePath);
+        fs.unlinkSync(file.path);
+        // const uploadsDir = path.join(__dirname, 'uploads');
+        // fs.rm(uploadsDir, { recursive: true }, (err) => {
+        //     if (err) {
+        //         console.error('Error deleting uploads folder:', err);
+        //     } else {
+        //         console.log('Uploads folder deleted successfully');
+        //         // Recreate the uploads folder
+        //         fs.mkdir(uploadsDir, (err) => {
+        //             if (err) {
+        //                 console.error('Error creating uploads folder:', err);
+        //             } else {
+        //                 console.log('Uploads folder recreated successfully');
+        //             }
+        //         });
+        //     }
+        // });
+    });
+})
 
 
 app.listen(3000, () => {
