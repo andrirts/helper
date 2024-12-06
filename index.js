@@ -692,7 +692,7 @@ app.post('/upload-struk-pln-prepaid', upload.single('file'), async (req, res) =>
         cellK9.value = `Rp ${jsonData[i]['ANGSURAN']?.toLocaleString('id-ID') || '0'}`;
 
         const cellK10 = sheets[`Sheet ${i + 1}`].getCell('K10');
-        cellK10.value = `Rp ${jsonData[i]['Price'].toLocaleString('id-ID')}`;
+        cellK10.value = `Rp ${jsonData[i]['RP STROOM/TOKEN'].toLocaleString('id-ID')}`;
 
         const cellK11 = sheets[`Sheet ${i + 1}`].getCell('K11');
         cellK11.value = `${jsonData[i]['Total kWh']}`;
