@@ -35,14 +35,14 @@ function createTemplatePrepaid(workbook, sheetPage) {
   worksheet.getColumn('A').width = 9;
   worksheet.getColumn('B').width = 1.91;
   worksheet.getColumn('C').width = 18.09;
-  worksheet.getColumn('D').width = 5.09;
-  worksheet.getColumn('E').width = 12.64;
+  worksheet.getColumn('D').width = 2;
+  worksheet.getColumn('E').width = 12;
   worksheet.getColumn('F').width = 1.91;
   worksheet.getColumn('G').width = 16.82;
   worksheet.getColumn('H').width = 4.19;
   worksheet.getColumn('I').width = 14.72;
-  worksheet.getColumn('J').width = 1.91;
-  worksheet.getColumn('K').width = 15.64;
+  worksheet.getColumn('J').width = 3;
+  worksheet.getColumn('K').width = 14.18;
   worksheet.getColumn('L').width = 18.73;
 
   //Merging Cells
@@ -64,8 +64,8 @@ function createTemplatePrepaid(workbook, sheetPage) {
 
   // Cell A
   // Write data to cell A1
-  const cellA1 = worksheet.getCell("A1");
-  cellA1.value = "BANK MANDIRI";
+  // const cellA1 = worksheet.getCell("A1");
+  // cellA1.value = "BANK MANDIRI";
 
   const cellA2 = worksheet.getCell("A2");
   cellA2.value = "RTS 01 (54RTSOP1 )";
@@ -92,19 +92,19 @@ function createTemplatePrepaid(workbook, sheetPage) {
   cellA12.value = "RP BAYAR";
 
   for (let row = 6; row <= 12; row++) {
-    if (row === 11) {
+    if (row === 11 || row === 12) {
       continue;
     }
-
-    worksheet.getCell(`B${row}`).value = ":";
-    worksheet.getCell(`B${row}`).alignment = {
-      vertical: "bottom",
-      horizontal: "center",
-    };
+    worksheet.mergeCells(`B${row}:C${row}`)
+    // worksheet.getCell(`B${row}`).value = ":";
+    // worksheet.getCell(`B${row}`).alignment = {
+    //   vertical: "bottom",
+    //   horizontal: "center",
+    // };
   }
 
-  const cellE1 = worksheet.getCell("E1");
-  cellE1.value = "BANK MANDIRI";
+  // const cellE1 = worksheet.getCell("E1");
+  // cellE1.value = "BANK MANDIRI";
 
   const cellE2 = worksheet.getCell("E2");
   cellE2.value = "RTS 01 (54RTSOP1 )";
@@ -133,8 +133,8 @@ function createTemplatePrepaid(workbook, sheetPage) {
   const cellE13 = worksheet.getCell("E13");
   cellE13.value = "STROOM/TOKEN";
 
-  const cellE15 = worksheet.getCell("E15");
-  cellE15.value = "MUP - MANDIRI";
+  // const cellE15 = worksheet.getCell("E15");
+  // cellE15.value = "MUP - MANDIRI";
 
   const cellE16 = worksheet.getCell("E16");
   cellE16.value = "Informasi Hubungi Call Center 123 atau hubungi PLN Terdekat";
@@ -155,7 +155,7 @@ function createTemplatePrepaid(workbook, sheetPage) {
 
   //Cell I
   const cellI1 = worksheet.getCell("I1");
-  cellI1.value = "TGL BAYAR :";
+  cellI1.value = "TGL BAYAR ";
 
   const cellI6 = worksheet.getCell("I6");
   cellI6.value = "MATERAI";
@@ -182,14 +182,30 @@ function createTemplatePrepaid(workbook, sheetPage) {
     if (row == 2 || row == 3 || row == 4 || row == 5) {
       continue;
     }
-    worksheet.getCell(`J${row}`).value = ":";
+    if (row == 10) {
+      worksheet.getCell(`J${row}`).value = ": Rp";
+      worksheet.getCell(`J${row}`).alignment = {
+        vertical: "bottom",
+        horizontal: "center",
+      };
+      continue;
+    }
+    if (row == 1 || row == 11) {
+      worksheet.getCell(`J${row}`).value = ":";
+      worksheet.getCell(`J${row}`).alignment = {
+        vertical: "middle",
+        horizontal: "left",
+      };
+      continue;
+    }
+    worksheet.getCell(`J${row}`).value = ": Rp";
     worksheet.getCell(`J${row}`).alignment = {
       vertical: "middle",
-      horizontal: "center",
+      horizontal: "left",
     };
   }
   applyDefaultStyle(worksheet);
-  cellA1.font = fontTitle;
+  // cellA1.font = fontTitle;
   cellA2.font = fontTitle;
   cellA4.font = fontTitle;
   cellA4.alignment = {
@@ -197,7 +213,7 @@ function createTemplatePrepaid(workbook, sheetPage) {
     vertical: "middle",
   };
 
-  cellE1.font = fontTitle;
+  // cellE1.font = fontTitle;
   cellE2.font = fontTitle;
   cellE4.font = fontTitle;
   cellE4.alignment = {
@@ -205,10 +221,10 @@ function createTemplatePrepaid(workbook, sheetPage) {
     vertical: "top",
   };
 
-  cellE15.alignment = {
-    horizontal: 'center',
-    vertical: 'bottom'
-  }
+  // cellE15.alignment = {
+  //   horizontal: 'center',
+  //   vertical: 'bottom'
+  // }
 
   cellE16.alignment = {
     horizontal: 'center',

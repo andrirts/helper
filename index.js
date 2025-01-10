@@ -623,7 +623,7 @@ app.post('/upload-struk-pln-prepaid', upload.single('file'), async (req, res) =>
         sheets[`Sheet ${i + 1}`] = await createTemplatePrepaid(workbook, i + 1);
         const noRef = generateRandomAlphanumeric(32);
         const cellC6 = sheets[`Sheet ${i + 1}`].getCell('C6');
-        cellC6.value = `${jsonData[i]['Transaction ID']}`;
+        cellC6.value = `: ${jsonData[i]['Transaction ID']}`;
 
         const cellC7 = sheets[`Sheet ${i + 1}`].getCell('C7');
         cellC7.value = `${jsonData[i]['Customer ID']}`;
@@ -642,7 +642,10 @@ app.post('/upload-struk-pln-prepaid', upload.single('file'), async (req, res) =>
         }
 
         const cellC12 = sheets[`Sheet ${i + 1}`].getCell('C12');
-        cellC12.value = `Rp ${jsonData[i]['Price'].toLocaleString('id-ID')}`;
+        cellC12.value = `${jsonData[i]['Price'].toLocaleString('id-ID')}`;
+        cellC12.alignment = {
+            horizontal: 'right'
+        }
 
         const cellG6 = sheets[`Sheet ${i + 1}`].getCell('G6');
         cellG6.value = `${jsonData[i]['Transaction ID']}`;
@@ -665,7 +668,7 @@ app.post('/upload-struk-pln-prepaid', upload.single('file'), async (req, res) =>
         }
 
         const cellG11 = sheets[`Sheet ${i + 1}`].getCell('G11');
-        cellG11.value = `Rp ${jsonData[i]['Price'].toLocaleString('id-ID')}`;
+        cellG11.value = `Rp                         ${jsonData[i]['Price'].toLocaleString('id-ID')}`;
 
         const cellG13 = sheets[`Sheet ${i + 1}`].getCell('G13');
         cellG13.value = `${jsonData[i]['SN']}`;
@@ -680,25 +683,25 @@ app.post('/upload-struk-pln-prepaid', upload.single('file'), async (req, res) =>
         cellK1.value = `${moment(excelDateToJsDate(jsonData[i]['Created Date'])).format('YYYY/MM/DD HH:mm')}`;
 
         const cellK6 = sheets[`Sheet ${i + 1}`].getCell('K6');
-        cellK6.value = `Rp ${jsonData[i]['Materai']?.toLocaleString('id-ID') || '0'}`;
+        cellK6.value = `${jsonData[i]['Materai']?.toLocaleString('id-ID') || '0'}`;
 
         const cellK7 = sheets[`Sheet ${i + 1}`].getCell('K7');
-        cellK7.value = `Rp ${jsonData[i]['PPN']?.toLocaleString('id-ID') || '0'}`;
+        cellK7.value = `${jsonData[i]['PPN']?.toLocaleString('id-ID') || '0'}`;
 
         const cellK8 = sheets[`Sheet ${i + 1}`].getCell('K8');
-        cellK8.value = `Rp ${jsonData[i]['PPJ']?.toLocaleString('id-ID') || '0'}`;
+        cellK8.value = `${jsonData[i]['PPJ']?.toLocaleString('id-ID') || '0'}`;
 
         const cellK9 = sheets[`Sheet ${i + 1}`].getCell('K9');
-        cellK9.value = `Rp ${jsonData[i]['ANGSURAN']?.toLocaleString('id-ID') || '0'}`;
+        cellK9.value = `${jsonData[i]['ANGSURAN']?.toLocaleString('id-ID') || '0'}`;
 
         const cellK10 = sheets[`Sheet ${i + 1}`].getCell('K10');
-        cellK10.value = `Rp ${jsonData[i]['RP STROOM/TOKEN'].toLocaleString('id-ID')}`;
+        cellK10.value = `${jsonData[i]['RP STROOM/TOKEN'].toLocaleString('id-ID')}`;
 
         const cellK11 = sheets[`Sheet ${i + 1}`].getCell('K11');
         cellK11.value = `${jsonData[i]['Total kWh']}`;
 
         const cellK12 = sheets[`Sheet ${i + 1}`].getCell('K12');
-        cellK12.value = `Rp ${jsonData[i]['Admin Fee'].toLocaleString('id-ID')}`;
+        cellK12.value = `${Number(jsonData[i]['Admin Fee']).toLocaleString('id-ID')}`;
 
         const cellA19 = sheets[`Sheet ${i + 1}`].getCell('A19');
         cellA19.value = `*** CSRTS-(${moment(excelDateToJsDate(jsonData[i]['Created Date'])).format('YYYY/MM/DD HH:mm')})***`;
@@ -723,6 +726,21 @@ app.post('/upload-struk-pln-prepaid', upload.single('file'), async (req, res) =>
             vertical: "bottom",
             horizontal: "center",
         };
+
+        const alignmentRightCells = [
+            cellK6,
+            cellK7,
+            cellK8,
+            cellK9,
+            cellK10,
+            cellK11,
+            cellK12,
+        ]
+        alignmentRightCells.forEach(cell => {
+            cell.alignment = {
+                horizontal: 'right'
+            }
+        })
 
         const listCells = [
             cellC6,
