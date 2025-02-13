@@ -626,13 +626,13 @@ app.post('/upload-struk-pln-prepaid', upload.single('file'), async (req, res) =>
         cellC6.value = `: ${jsonData[i]['Transaction ID']}`;
 
         const cellC7 = sheets[`Sheet ${i + 1}`].getCell('C7');
-        cellC7.value = `${jsonData[i]['Customer ID']}`;
+        cellC7.value = `: ${jsonData[i]['Customer ID']}`;
 
         const cellC8 = sheets[`Sheet ${i + 1}`].getCell('C8');
-        cellC8.value = jsonData[i]['Customer Name'];
+        cellC8.value = `: ${jsonData[i]['Customer Name']}`;
 
         const cellC9 = sheets[`Sheet ${i + 1}`].getCell('C9');
-        cellC9.value = `${jsonData[i]['Tarif/Daya']}`
+        cellC9.value = `: ${jsonData[i]['Tarif/Daya']}`
 
         const cellC10 = sheets[`Sheet ${i + 1}`].getCell('C10');
         cellC10.value = `${noRef}`;
@@ -680,7 +680,7 @@ app.post('/upload-struk-pln-prepaid', upload.single('file'), async (req, res) =>
         };
 
         const cellK1 = sheets[`Sheet ${i + 1}`].getCell('K1');
-        cellK1.value = `${moment(excelDateToJsDate(jsonData[i]['Created Date'])).format('YYYY/MM/DD HH:mm')}`;
+        cellK1.value = `${moment(excelDateToJsDate(jsonData[i]['Created Date'])).format('YYYY-MM-DD HH:mm:ss')}`;
 
         const cellK6 = sheets[`Sheet ${i + 1}`].getCell('K6');
         cellK6.value = `${jsonData[i]['Materai']?.toLocaleString('id-ID') || '0'}`;

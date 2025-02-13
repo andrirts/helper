@@ -33,9 +33,9 @@ function createTemplatePrepaid(workbook, sheetPage) {
   // worksheet.getRow(13).height = 27.75;
 
   worksheet.getColumn('A').width = 9;
-  worksheet.getColumn('B').width = 1.91;
-  worksheet.getColumn('C').width = 18.09;
-  worksheet.getColumn('D').width = 2;
+  worksheet.getColumn('B').width = 1;
+  worksheet.getColumn('C').width = 19.09;
+  worksheet.getColumn('D').width = 1;
   worksheet.getColumn('E').width = 12;
   worksheet.getColumn('F').width = 1.91;
   worksheet.getColumn('G').width = 16.82;
@@ -87,12 +87,20 @@ function createTemplatePrepaid(workbook, sheetPage) {
 
   const cellA10 = worksheet.getCell("A10");
   cellA10.value = "NO REF";
+  cellA10.alignment = {
+    vertical: 'center',
+    wrapText: true
+  }
 
   const cellA12 = worksheet.getCell("A12");
   cellA12.value = "RP BAYAR";
 
   for (let row = 6; row <= 12; row++) {
-    if (row === 11 || row === 12) {
+    if (row === 11) {
+      continue;
+    }
+    if (row === 12 || row === 10) {
+      worksheet.getCell(`B${row}`).value = ":";
       continue;
     }
     worksheet.mergeCells(`B${row}:C${row}`)
