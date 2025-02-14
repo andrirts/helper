@@ -48,8 +48,8 @@ function createTemplate(workbook, sheetPage) {
 
     // Cell A
     // Write data to cell A1
-    const cellA1 = worksheet.getCell('A1');
-    cellA1.value = 'BANK MANDIRI';
+    // const cellA1 = worksheet.getCell('A1');
+    // cellA1.value = 'BANK MANDIRI';
 
     const cellA2 = worksheet.getCell('A2');
     cellA2.value = 'RTS 01 (54RTSOP1 )';
@@ -94,8 +94,8 @@ function createTemplate(workbook, sheetPage) {
 
     //Cell E
 
-    const cellE1 = worksheet.getCell('E1');
-    cellE1.value = 'BANK MANDIRI';
+    // const cellE1 = worksheet.getCell('E1');
+    // cellE1.value = 'BANK MANDIRI';
 
     const cellE2 = worksheet.getCell('E2');
     cellE2.value = 'RTS 01 (54RTSOP1 )';
@@ -169,7 +169,7 @@ function createTemplate(workbook, sheetPage) {
     }
 
     applyDefaultStyle(worksheet);
-    cellA1.font = fontTitle;
+    // cellA1.font = fontTitle;
     cellA2.font = fontTitle;
     cellA4.font = fontTitle;
     cellA4.alignment = {
@@ -177,7 +177,7 @@ function createTemplate(workbook, sheetPage) {
         vertical: 'middle'
     }
 
-    cellE1.font = fontTitle;
+    // cellE1.font = fontTitle;
     cellE2.font = fontTitle;
     cellE4.font = fontTitle;
     cellE4.alignment = {
