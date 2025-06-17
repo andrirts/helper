@@ -10,9 +10,11 @@ const { queryDatabase } = require('./database');
 const createTemplate = require('./template-struk-listrik');
 const createTemplatePrepaid = require('./template-struk-prepaid-pln');
 const { generateRandomAlphanumeric } = require('./helper');
+const cors = require('cors');
 
 const app = express();
 const upload = multer({ dest: 'uploads/' });
+app.use(cors());
 
 function createExcelFile(columns) {
     const workbook = new ExcelJS.Workbook();
@@ -59,7 +61,10 @@ function excelDateToJsDate(serial) {
 }
 
 app.get("/", (req, res, next) => {
-    return res.send("Hello World");
+    console.log("Hello World");
+    return res.json({
+        message: "Hello World"
+    });
 })
 
 // Upload endpoint
@@ -432,36 +437,27 @@ app.post('/upload-trx', upload.single('file'), async (req, res) => {
         await queryDatabase('BEGIN');
 
         for (const data of datas) {
-            if (!data['Reference ID']) {
+            console.log(data['IDTRX'])
+            if (!data['IDTRX']) {
+                console.log(data)
                 await queryDatabase('ROLLBACK');
+                fs.unlinkSync(file.path);
                 return res.json({
-                    message: 'Reference ID not found'
+                    message: 'Id transaksi not found'
                 })
             }
-            const findData = await queryDatabase('select * from ppob_transaction where reference_id = $1', [data['Reference ID']]);
+            const findData = await queryDatabase('select * from transaksi_his where idtransaksi = ?', [data['IDTRX']]);
             if (findData.length === 0) {
+                console.log(findData)
                 await queryDatabase('ROLLBACK');
+                fs.unlinkSync(file.path);
                 return res.json({
-                    message: `Trx Id ${data['Reference ID']} not found`
+                    message: `Trx Id ${data['IDTRX']} not found`
                 })
             }
 
-            const updateQuery = 'update ppob_transaction set status = $1, response_data = $2, response_biller = $3 where reference_id = $4';
-            const status = data['Status'] === 'SUCCESS' ? 'SUCCESS' : 'FAILED';
-            const response_biller = status === 'SUCCESS' ? 'Approve' : findData[0].response_biller;
-            let response_data = findData[0].response_data ? JSON.parse(findData[0].response_data) : null;
-            if (status === 'SUCCESS') {
-                if (response_data) {
-                    response_data['serial_number'] = data['Serial Number'];
-                } else {
-                    response_data = {
-                        customer_number: '',
-                        customer_name: '',
-                        serial_number: data['Serial Number']
-                    }
-                }
-            }
-            const params = [status, response_data, response_biller, data['Reference ID']];
+            const updateQuery = 'update transaksi_his set SN = ? where idtransaksi = ?';
+            const params = [data['SN'], data['IDTRX']];
             await queryDatabase(updateQuery, params);
         }
         await queryDatabase('COMMIT');
